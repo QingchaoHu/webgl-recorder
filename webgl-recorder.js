@@ -101,12 +101,37 @@
               for (var i = 0; i < arguments.length; i++) {
                 var arg = arguments[i];
 
-                if (typeof arg === 'number' || typeof arg === 'boolean' || typeof arg === 'string' || arg === null) {
+                if (typeof arg === 'number' || typeof arg === 'boolean' || typeof arg === 'string' || arg instanceof Array || arg === null) {
                   args.push(JSON.stringify(arg));
+                }
+
+                else if (arg instanceof ArrayBuffer) {
+                  args.push('(new Int8Array([' + new Int8Array(arg).join(',') + '])).buffer');
                 }
 
                 else if (ArrayBuffer.isView(arg)) {
                   args.push('new ' + arg.constructor.name + '([' + Array.prototype.slice.call(arg) + '])');
+                }
+
+                else if (arg instanceof Image) {
+                  var c = document.createElement("canvas");
+                  c.width = arg.width;
+                  c.height = arg.height;
+                  c.getContext("2d").drawImage(arg, 0, 0);
+                  var i = c.toDataURL("image/png");
+                  trace.push('  var image = new Image(); image.src = \'' + i + '\'');
+                  args.push('image');
+                }
+
+                else if (arg instanceof ImageBitmap) {
+                  var c = document.createElement("canvas");
+                  c.width = arg.width;
+                  c.height = arg.height;
+                  c.getContext("2d").drawImage(arg, 0, 0);
+                  var i = c.toDataURL("image/png");
+                  // trace.push('  var image = new Image(); image.src = \'' + image + '\'; var imageBitmap = await createImageBitmap(image, 0, 0, ' + arg.width + ', ' + arg.height +  ');');
+                  trace.push('  var image = new Image(); image.src = \'' + i + '\';');
+                  args.push('image');
                 }
 
                 else {
