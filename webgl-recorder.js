@@ -32,7 +32,7 @@
       trace.push('  gl.canvas.height = ' + oldHeight + ';');
 
       function compileTrace() {
-        var text = 'function* render(gl) {\n';
+        var text = 'async function* render(gl) {\n';
         text += '  // Recorded using https://github.com/evanw/webgl-recorder\n';
         for (var key in variables) {
           text += '  var ' + key + 's = [];\n';
@@ -114,12 +114,13 @@
                 }
 
                 else if (arg instanceof Image) {
-                  var c = document.createElement("canvas");
-                  c.width = arg.width;
-                  c.height = arg.height;
-                  c.getContext("2d").drawImage(arg, 0, 0);
-                  var i = c.toDataURL("image/png");
-                  trace.push('  var image = new Image(); image.src = \'' + i + '\'');
+                  // var c = document.createElement("canvas");
+                  // c.width = arg.width;
+                  // c.height = arg.height;
+                  // c.getContext("2d").drawImage(arg, 0, 0);
+                  // var i = c.toDataURL("image/png");
+                  // trace.push('  var image = await new Promise(function(resolve) { let i = new Image(); i.onload = function() { resolve(this); }; i.src = \'' + i + '\'; });');
+                  trace.push('  var image = await new Promise(function(resolve) { let i = new Image(); i.onload = function() { resolve(this); }; i.src = \'' + arg.src + '\'; });');
                   args.push('image');
                 }
 
@@ -130,7 +131,7 @@
                   c.getContext("2d").drawImage(arg, 0, 0);
                   var i = c.toDataURL("image/png");
                   // trace.push('  var image = new Image(); image.src = \'' + image + '\'; var imageBitmap = await createImageBitmap(image, 0, 0, ' + arg.width + ', ' + arg.height +  ');');
-                  trace.push('  var image = new Image(); image.src = \'' + i + '\';');
+                  trace.push('  var image = await new Promise(function(resolve) { let i = new Image(); i.onload = function() { resolve(this); }; i.src = \'' + i + '\'; });');
                   args.push('image');
                 }
 
